@@ -1,73 +1,102 @@
 <template>
   <div>
-    <button @click="changeMsg">change</button>
-    <div>{{ message3.name }}</div>
-    <div>{{ message4.name }}</div>
-     <button @click="changeMyref">changeMyref</button>
-     <div>{{message5}}</div>
+    <input v-model="firstName" type="text">
+    <input v-model="lastName" type="text">
+    <div>{{ name }}</div>
+    <hr>
+    <table style="width:800px" border>
+      <thead>
+        <tr>
+          <th>名称</th>
+          <th>数量</th>
+          <th>价格</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="(item, index) in data">
+          <td align="center">{{ item.name }}</td>
+          <td align="center">
+            <button @click="AddAnbSub(item, false)">-</button>{{ item.num }}<button
+              @click="AddAnbSub(item, true)">+</button>
+          </td>
+          <td align="center">{{ item.price }}</td>
+          <td align="center"> <button @click="del(index)">删除</button>
+          </td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td align="center">总价:{{ $total }}</td>
+        </tr>
+      </tfoot>
+
+    </table>
+
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, isRef, shallowRef, Ref, triggerRef, customRef } from 'vue'
+// 学习Vue3 第九章（认识computed计算属性）
+import { ref, computed, reactive } from 'vue'
+//  2 对象形式
+const firstName = ref('')
+const lastName = ref('')
 
-// isRef
-// 判断是不是一个ref对象
-const message = ref("lalala");
-const message2 = '特菈学姐超可爱';
-console.log(isRef(message))
-console.log(isRef(message2))
-
-
-// shallowRef
-// 创建一个跟踪自身 .value 变化的 ref，但不会使其值也变成响应式的
-// 例子
-// 修改其属性是非响应式的这样是不会改变的
-type user = {
-  name: string
-}
-const message3: Ref<user> = ref({
-  name: '特菈学姐'
+let name = computed({
+  get: () => {
+    return firstName.value + lastName.value
+  },
+  set: (value) => {
+    firstName.value + lastName.value
+  }
 })
-const message4: Ref<user> = shallowRef({
-  name: '特菈学姐'
+type Shop = {
+  name: string,
+  num: number,
+  price: number
+}
+const data = reactive<Shop[]>(
+  [{
+    name: '特菈学姐的咖啡',
+    num: 1,
+    price: 100
+  }, {
+    name: '残影的Reflect',
+    num: 1,
+    price: 100
+  }, {
+    name: '小池的服务器',
+    num: 1,
+    price: 1
+  }
+  ]
+)
+
+const AddAnbSub = (item: Shop, type: boolean = false) => {
+  if (item.num > 1 && !type) {
+    item.num--
+  }
+  if (item.num <= 99 && type) {
+    item.num++
+  }
+
+}
+
+const del = (index: number) => {
+  data.splice(index, 1)
+
+}
+
+const $total = computed<number>(() => {
+  return data.reduce((prev, next) => {
+    return prev + (next.num * next.price)
+  }, 0)
+
 })
-const changeMsg = () => {
-  // message3.value.name = '瑾知'
-  message4.value.name = '瑾知'
-  console.log(message3.value, message4.value);
-  // triggerRef 
-  // 强制更新页面DOM
-  // 这样也是可以改变值的
-  triggerRef(message4)
-  // 如果同时有ref更新，shallowRef也会被响应
-}
-
-// customRef
-// 自定义ref 
-// customRef 是个工厂函数要求我们返回一个对象 并且实现 get 和 set
-
-function Myref<T>(value: T) {
-  return customRef((track, trigger) => {
-    return {
-      get() {
-        track()
-        return value;
-      },
-      set(newVal: T) {
-        console.log('set');
-        value = newVal
-        trigger();
-      }
-    }
-  })
-}
-
-let message5 = Myref('嗷呜')
-const changeMyref=()=>{
-  message5.value='嗷呜~~~~~'
-}
-
 
 </script>
 
