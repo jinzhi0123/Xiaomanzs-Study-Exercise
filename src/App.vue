@@ -1,104 +1,43 @@
 <template>
   <div>
-    <input v-model="firstName" type="text">
-    <input v-model="lastName" type="text">
-    <div>{{ name }}</div>
-    <hr>
-    <table style="width:800px" border>
-      <thead>
-        <tr>
-          <th>名称</th>
-          <th>数量</th>
-          <th>价格</th>
-          <th>操作</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(item, index) in data">
-          <td align="center">{{ item.name }}</td>
-          <td align="center">
-            <button @click="AddAnbSub(item, false)">-</button>{{ item.num }}<button
-              @click="AddAnbSub(item, true)">+</button>
-          </td>
-          <td align="center">{{ item.price }}</td>
-          <td align="center"> <button @click="del(index)">删除</button>
-          </td>
-        </tr>
-      </tbody>
-      <tfoot>
-        <tr>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td align="center">总价:{{ $total }}</td>
-        </tr>
-      </tfoot>
-
-    </table>
 
   </div>
 </template>
 
 <script setup lang="ts">
-// 学习Vue3 第九章（认识computed计算属性）
-import { ref, computed, reactive } from 'vue'
-//  2 对象形式
-const firstName = ref('')
-const lastName = ref('')
+// 学习Vue3 第七章（认识Reactive全家桶）
+import {reactive,readonly } from 'vue'
 
-let name = computed({
-  get: () => {
-    return firstName.value + lastName.value
-  },
-  set: (value) => {
-    firstName.value + lastName.value
-  }
+// let person = reactive('sad')
+// 绑定普通的数据类型 我们可以 使用昨天讲到ref
+// 你如果用ref去绑定对象 或者 数组 等复杂的数据类型 我们看源码里面其实也是 去调用reactive
+// 使用reactive 去修改值无须.value
+// reactive 基础用法
+let person = reactive({
+  name:'瑾知'
 })
-type Shop = {
-  name: string,
-  num: number,
-  price: number
-}
-const data = reactive<Shop[]>(
-  [{
-    name: '特菈学姐的咖啡',
-    num: 1,
-    price: 100
-  }, {
-    name: '残影的Reflect',
-    num: 1,
-    price: 100
-  }, {
-    name: '小池的服务器',
-    num: 1,
-    price: 1
-  }
-  ]
-)
+person.name = "特菈学姐"
+// 数组异步赋值问题
+// 这样赋值页面是不会变化的因为会脱离响应式
+let arr = reactive<number[]>([])
+setTimeout(() => {
+  arr = [1,2,3]
+  console.log(arr)
+}, 1000);
 
-const AddAnbSub = (item: Shop, type: boolean = false) => {
-  if (item.num > 1 && !type) {
-    item.num--
-  }
-  if (item.num <= 99 && type) {
-    item.num++
-  }
+// 方案2
 
-}
+// 包裹一层对象
 
-const del = (index: number) => {
-  data.splice(index, 1)
 
-}
 
-const $total = computed<number>(() => {
-  return data.reduce((prev, next) => {
-    return prev + (next.num * next.price)
-  }, 0)
+// 拷贝一份proxy对象将其设置为只读
+const copy = readonly(person)
 
-})
 
+// shallowReactive 只能对浅层的数据 如果是深层的数据只会改变值 不会改变视图
 </script>
 
 <style scoped>
+
 </style>
